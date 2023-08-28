@@ -17,14 +17,16 @@ The client folder contains a [react app](https://reactjs.org/) using [vite](http
 2. Run `npm install` to install all the depedencies
 3. Run `npm run dev` to start the application 
 4. Now you should be able to visit the app at http://127.0.0.1:5173/
+5. Create several private-public key pairs by running `node scripts/generateKeyPair.js`
 
 ### Server
 
 The server folder contains a node.js server using [express](https://expressjs.com/). To run the server, follow these steps:
 
 1. Open a terminal within the `/server` folder 
-2. Run `npm install` to install all the depedencies 
-3. Run `node index` to start the server 
+2. Replace the public keys in the `balances` object in the `index.js` file with the onces you generated before
+3. Run `npm install` to install all the depedencies 
+4. Run `node index` to start the server 
 
 The application should connect to the default server port (3042) automatically! 
 
