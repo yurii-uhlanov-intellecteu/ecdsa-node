@@ -1,7 +1,11 @@
 import { useState } from "react";
 import server from "./server";
+import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import { toHex, utf8ToBytes } from "ethereum-cryptography/utils";
+import { getRandomBytesSync } from "ethereum-cryptography/random.js";
+import { sha256 } from "ethereum-cryptography/sha256.js";
 
-function Transfer({ address, setBalance }) {
+function Transfer({ privateKey, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
 
@@ -9,18 +13,22 @@ function Transfer({ address, setBalance }) {
 
   async function transfer(evt) {
     evt.preventDefault();
+    const transactionId = toHex(getRandomBytesSync(32));
+    const amount = parseInt(sendAmount);
+    const message = { transactionId, amount, recipient }
+    const messageHash = sha256(utf8ToBytes(JSON.stringify(message)));
+    const signature = secp256k1.sign(toHex(messageHash), privateKey);
 
     try {
-      const {
-        data: { balance },
-      } = await server.post(`send`, {
-        sender: address,
-        amount: parseInt(sendAmount),
-        recipient,
+      const { data: { balance } } = await server.post(`send`, {
+        message,
+        signature: signature.toDERHex(),
+        recovery: signature.recovery,
       });
       setBalance(balance);
     } catch (ex) {
-      alert(ex.response.data.message);
+      console.log(ex);
+      alert(ex.response?.data?.message);
     }
   }
 
@@ -40,7 +48,7 @@ function Transfer({ address, setBalance }) {
       <label>
         Recipient
         <input
-          placeholder="Type an address, for example: 0x2"
+          placeholder="Type an address, for example: 036fad0f29b451...."
           value={recipient}
           onChange={setValue(setRecipient)}
         ></input>
